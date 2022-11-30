@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {Cell} from "../Cell/Cell";
 import './Board.css'
 
@@ -6,34 +6,324 @@ type BoardProps = {
     gridSize: number;
 }
 
+export enum CellContent {
+    BOMB = 'BOMB',
+    NUMBER = 'NUMBER',
+    EMPTY = 'EMPTY'
+}
+
+export interface CellStatus {
+    index: number[],
+    content: CellContent,
+    neighbouringBombs: number,
+    revealed: boolean,
+    flagged: boolean
+}
+
 export function Board({gridSize}: BoardProps) : JSX.Element{
 
-    const renderGrid = () => {
-        const length = gridSize*gridSize;
-        const cells = [] as JSX.Element[];
+    const fillEmptyStates = () => {
 
-        const bombs = plantBombs();
-        let content = '';
-        
-        for(let i=0; i< length; i++){
-            if(bombs.includes(i)){
-                content = '💣'
+        let emptyCells: Array<CellStatus[]> = [];
+
+        for(let i=0; i< gridSize; i++){
+
+            let cellStates = [];
+
+            for(let j=0; j< gridSize; j++){
+                cellStates.push({
+                    index: [i, j],
+                    content: CellContent.EMPTY,
+                    neighbouringBombs: 0,
+                    revealed: false,
+                    flagged: false
+                } as CellStatus)
             }
-            cells.push(<Cell key={`${i}`} content={content}/>)
-            content = ''
+
+            emptyCells.push(cellStates);
         }
-    return cells;
+        return emptyCells;
     }
 
-    const plantBombs = () => {
-        const bombs = [];
-        for(let i=0; i<= gridSize; i++){
-            bombs.push(Math.floor(Math.random() * gridSize * gridSize))
+    const plantBombs = (boardState: Array<CellStatus[]>) => {
+        let bombsPlanted: number = 0;
+        while(bombsPlanted < gridSize){
+            const randomIndex = [Math.floor(Math.random() * gridSize), Math.floor(Math.random() * gridSize)];
+            if(boardState[randomIndex[0]][randomIndex[1]].content !== CellContent.BOMB){ 
+                boardState[randomIndex[0]][randomIndex[1]].content = CellContent.BOMB
+                ++bombsPlanted;
+            }
         }
-        return bombs;
+        return boardState;
     }
+
+    const findNeighbouringBombs = (boardState: Array<CellStatus[]>): Array<CellStatus[]> => {
+        for(let x=0; x < gridSize; x++){
+            for(let y=0; y < gridSize; y++){
+                if(boardState[x][y].content === CellContent.BOMB){
+                    if(x > 0){
+                        boardState[x - 1][y].neighbouringBombs += 1;
+                    }
+                    if(x < gridSize - 1){
+                        boardState[x + 1][y].neighbouringBombs += 1;
+                    }
+                    if(y > 0){
+                        boardState[x][y - 1].neighbouringBombs += 1;
+                    }
+                    if(y < gridSize - 1){
+                        boardState[x][y + 1].neighbouringBombs += 1;
+                    }
+                    if(x > 0 && y > 0){
+                        boardState[x - 1][y - 1].neighbouringBombs += 1;
+                    }
+                    if(x < gridSize - 1 && y < gridSize - 1){
+                        boardState[x + 1][y + 1].neighbouringBombs += 1;
+                    }
+                    if(x > 0 && y < gridSize - 1){
+                        boardState[x - 1][y + 1].neighbouringBombs += 1;
+                    }
+                    if(x < gridSize - 1 && y > 0){
+                        boardState[x + 1][y - 1].neighbouringBombs += 1;
+                    }
+                }
+            }
+        }
+        return boardState;
+    }
+
+    const initBoard = (): Array<CellStatus[]> => {
+        let boardState = fillEmptyStates();
+        boardState = plantBombs(boardState);
+        boardState = findNeighbouringBombs(boardState);
+        return boardState;
+    }
+
+    const handleClick = (x: number, y: number): void =>{
+        let board = boardState;
+        if(board[x][y].flagged === false){
+            if(board[x][y].content === CellContent.BOMB){
+                board.forEach((row) => {
+                    row.forEach((column) => {
+                        if(column.content === CellContent.BOMB){
+                            column.revealed = true;
+                        }
+                    })
+                })
+                setIsGameOver(true);
+            } else {
+                board[x][y].revealed = true;
+                if(board[x][y].neighbouringBombs === 0){
+                    board = revealEmpty(x, y);
+                }
+                setBoardState(board);
+                setHasToRender(!hasToRender);
+            }
+        }
+    }
+
+    const handleRightClick = (x: number, y: number): void => {
+        document.addEventListener("contextmenu", (event) => {
+            event.preventDefault();
+        });
+        let board = boardState; 
+        board[x][y].flagged = !board[x][y].flagged;
+        setBoardState(board);
+        setHasToRender(!hasToRender);
+    }
+
+    const renderGrid = () => {
+
+        const cells = [] as JSX.Element[];
+        let key=0;
+        for(let x=0; x < gridSize; x++){
+            for(let y=0; y < gridSize; y++){
+                key++;
+                cells.push(<Cell key={key} onClick={handleClick} onRightClick={handleRightClick} boardStatus={boardState[x][y]} />)
+            }
+        }
+        return cells;
+    }
+
+    const revealEmpty = (x: number, y: number) => {
+        let show: CellStatus[]=[];
+        let arr = boardState;
+        show.push(arr[x][y]);
+        while(show.length!==0){
+            let one = show.pop();
+            if(one){
+            let i=one?.index[0];
+            let j=one?.index[1];
+            if(!one?.revealed){
+                
+                one.revealed=true;
+            }
+            if(one.neighbouringBombs !==0){
+                break;
+            }
+    
+            // top left 
+    
+            if(
+                i>0 && 
+                j>0 &&
+                arr[i-1][j-1].neighbouringBombs===0 &&
+                !arr[i-1][j-1].revealed
+            )
+            {
+                show.push(arr[i-1][j-1]);
+            }
+    
+            // bottom right
+    
+            if(
+                i<arr.length-1 &&
+                j<arr[0].length-1 &&
+                arr[i+1][j+1].neighbouringBombs===0 &&
+                !arr[i+1][j+1].revealed
+            ){
+                show.push(arr[i+1][j+1]);
+            }
+    
+            // top right
+    
+            if(
+                i>0 &&
+                j<arr[0].length-1 &&
+                arr[i-1][j+1].neighbouringBombs===0 &&
+                !arr[i-1][j+1].revealed
+            ){
+                show.push(arr[i-1][j+1]);
+            }
+    
+            // bottom left 
+    
+            if(
+                i<arr.length-1 &&
+                j>0 &&
+                arr[i+1][j-1].neighbouringBombs===0 &&
+                !arr[i+1][j-1].revealed
+            ){
+                show.push(arr[i+1][j-1]);
+            }
+    
+            // top 
+            if(
+                i>0 &&
+                arr[i-1][j].neighbouringBombs===0 &&
+                !arr[i-1][j].revealed 
+            ){
+                show.push(arr[i-1][j]);
+            }
+    
+            // right
+    
+            if(
+                j<arr[0].length-1 &&
+                arr[i][j+1].neighbouringBombs===0 &&
+                !arr[i][j+1].revealed
+            ){
+                show.push(arr[i][j+1]);
+            }
+    
+            // bottom
+    
+            if(
+                i<arr.length-1 &&
+                arr[i+1][j].neighbouringBombs===0 &&
+                !arr[i+1][j].revealed
+            ){
+                show.push(arr[i+1][j]);
+            }
+    
+            // left
+    
+            if(
+                j>0 &&
+                arr[i][j-1].neighbouringBombs===0 &&
+                !arr[i][j-1].revealed
+            ){
+                show.push(arr[i][j-1]);
+            }
+    
+    
+            // start revealing the item
+    
+            if (
+                i > 0 &&
+                j > 0 &&
+                !arr[i - 1][j - 1].revealed
+              ) {
+                //Top Left Reveal
+          
+                arr[i - 1][j - 1].revealed = true;
+              }
+          
+              if (j > 0 && !arr[i][j - 1].revealed) {
+                // Left Reveal
+                arr[i][j - 1].revealed = true;
+                
+              }
+          
+              if (
+                i < arr.length - 1 &&
+                j > 0 &&
+                !arr[i + 1][j - 1].revealed
+              ) {
+                //Bottom Left Reveal
+                arr[i + 1][j - 1].revealed = true;
+                
+              }
+          
+              if (i > 0 && !arr[i - 1][j].revealed) {
+                //Top Reveal
+                arr[i - 1][j].revealed = true;
+                
+              }
+          
+              if (i < arr.length - 1 && !arr[i + 1][j].revealed) {
+                // Bottom Reveal
+                arr[i + 1][j].revealed = true;
+                
+              }
+          
+              if (
+                i > 0 &&
+                j < arr[0].length - 1 &&
+                !arr[i - 1][j + 1].revealed
+              ) {
+                // Top Right Reveal
+                arr[i - 1][j + 1].revealed = true;
+                
+              }
+          
+              if (j < arr[0].length - 1 && !arr[i][j + 1].revealed) {
+                //Right Reveal
+                arr[i][j + 1].revealed = true;
+                
+              }
+          
+              if (
+                i < arr.length - 1 &&
+                j < arr[0].length - 1 &&
+                !arr[i + 1][j + 1].revealed
+              ) {
+                // Bottom Right Reveal
+                arr[i + 1][j + 1].revealed = true;
+                
+              }
+            }
+        }
+        return arr;
+    } 
+
+    const [boardState, setBoardState] = useState<Array<CellStatus[]>>(initBoard())
+    const [hasToRender, setHasToRender] = useState(false);
+    const [isGameOver, setIsGameOver] = useState(false);
 
     return (
-        <div className="board-ctn" style={{width: gridSize*33}}>{renderGrid()}</div>
+        <div className="board-ctn" style={{width: gridSize*33}}>
+            {renderGrid()}
+            {isGameOver && <h1>GAME OVER</h1>}
+        </div>
     )
 }

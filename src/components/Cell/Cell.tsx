@@ -1,21 +1,37 @@
 import React from "react";
-import { useState } from "react";
 import './Cell.css'
+import {CellStatus, CellContent} from '../Board/Board'
 
 type CellProps = {
-    content: string;
-    status?: boolean;
+    boardStatus: CellStatus;
+    onClick?: any;
+    onRightClick: any;
 }
-export function Cell({content, status}: CellProps) {
 
-    const [isClicked, setIsClicked] = useState(false);
-    const handleClick= () => {
-        setIsClicked(true)
+export function Cell({boardStatus, onClick, onRightClick}: CellProps) {
+
+    const getCellContent = (): string => {
+        let cellContent = '';
+        if(boardStatus.content === CellContent.BOMB){
+            cellContent = '💣';
+        }
+        if(boardStatus.content !== CellContent.BOMB && boardStatus.neighbouringBombs !== 0){
+            cellContent = String(boardStatus.neighbouringBombs);
+        }
+        return cellContent;
+    }
+
+    const click=()=>{
+        onClick(boardStatus.index[0], boardStatus.index[1]); 
+    }    
+
+    const rightClick=() => {
+        onRightClick(boardStatus.index[0], boardStatus.index[1])
     }
 
     return (
-        <div onClick={handleClick} className='cell'>
-            {isClicked && content}
+        <div onClick={click} onContextMenu={rightClick} className={boardStatus.revealed? 'cell revealed' : 'cell'}>
+            {boardStatus.revealed? getCellContent() : boardStatus.flagged? '🚩' : ''}
         </div>
     )
 }

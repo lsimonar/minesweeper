@@ -4,3 +4,11 @@
     height: 25px;
     border: 4px outset;
 }
+
+.revealed {
+    border: 1px solid grey;
+    width: 31px;
+    height: 31px;
+    line-height: 31px;
+    text-align: center;
+}
