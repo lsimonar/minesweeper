@@ -100,7 +100,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
 
     const handleClick = (x: number, y: number): void =>{
         let board = boardState;
-        if(board[x][y].flagged === false){
+        if(board[x][y].flagged === false && !isGameOver){
             if(board[x][y].content === CellContent.BOMB){
                 board.forEach((row) => {
                     row.forEach((column) => {
@@ -320,10 +320,21 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     const [hasToRender, setHasToRender] = useState(false);
     const [isGameOver, setIsGameOver] = useState(false);
 
+    const playAgain = () => {
+        setIsGameOver(false);
+        setBoardState(initBoard())
+    }
+
     return (
         <div className="board-ctn" style={{width: gridSize*33}}>
             {renderGrid()}
-            {isGameOver && <h1>GAME OVER</h1>}
+            {isGameOver && 
+                <div>
+                    <h1>GAME OVER</h1>
+                    <button onClick={playAgain}>Play Again</button>
+                </div>        
+            }
+
         </div>
     )
 }
