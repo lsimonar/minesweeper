@@ -100,7 +100,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
 
     const handleClick = (x: number, y: number): void =>{
         let updatedBoard = [...[...boardState] ];
-        if(updatedBoard[x][y].flagged === false && !isGameOver){
+        if(updatedBoard[x][y].flagged === false && !isGameOver && checkWin !== (gridSize*gridSize - gridSize)){
             if(updatedBoard[x][y].content === CellContent.BOMB){
                 updatedBoard.forEach((row) => {
                     row.forEach((column) => {
@@ -111,9 +111,11 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
                 })
                 setIsGameOver(true);
             } else {
-                updatedBoard[x][y].revealed = true;
                 if(updatedBoard[x][y].neighbouringBombs === 0){
                     updatedBoard = revealEmpty(x, y);
+                } else {
+                    updatedBoard[x][y].revealed = true;
+                    setCheckWin(checkWin + 1)
                 }
                 setBoardState(updatedBoard);
             }
@@ -124,9 +126,11 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
         document.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         });
-        let updatedBoard = [... [...boardState]]; 
-        updatedBoard[x][y].flagged = !updatedBoard[x][y].flagged;
-        setBoardState(updatedBoard);
+        if(!isGameOver && checkWin !== (gridSize*gridSize - gridSize)){
+            let updatedBoard = [... [...boardState]]; 
+            updatedBoard[x][y].flagged = !updatedBoard[x][y].flagged;
+            setBoardState(updatedBoard);
+        }
     }
 
     const renderGrid = () => {
@@ -145,6 +149,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     const revealEmpty = (x: number, y: number) => {
         let show: CellStatus[]=[];
         let arr = [...[...boardState] ];
+        let revealedCells: number = 0;
         show.push(arr[x][y]);
         while(show.length!==0){
             let one = show.pop();
@@ -154,6 +159,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
             if(!one?.revealed){
                 
                 one.revealed=true;
+                ++revealedCells;
             }
             if(one.neighbouringBombs !==0){
                 break;
@@ -254,11 +260,13 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
                 //Top Left Reveal
           
                 arr[i - 1][j - 1].revealed = true;
+                ++revealedCells;
               }
           
               if (j > 0 && !arr[i][j - 1].revealed) {
                 // Left Reveal
                 arr[i][j - 1].revealed = true;
+                ++revealedCells;
                 
               }
           
@@ -269,18 +277,21 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
               ) {
                 //Bottom Left Reveal
                 arr[i + 1][j - 1].revealed = true;
+                ++revealedCells;
                 
               }
           
               if (i > 0 && !arr[i - 1][j].revealed) {
                 //Top Reveal
                 arr[i - 1][j].revealed = true;
+                ++revealedCells;
                 
               }
           
               if (i < arr.length - 1 && !arr[i + 1][j].revealed) {
                 // Bottom Reveal
                 arr[i + 1][j].revealed = true;
+                ++revealedCells;
                 
               }
           
@@ -291,12 +302,14 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
               ) {
                 // Top Right Reveal
                 arr[i - 1][j + 1].revealed = true;
+                ++revealedCells;
                 
               }
           
               if (j < arr[0].length - 1 && !arr[i][j + 1].revealed) {
                 //Right Reveal
                 arr[i][j + 1].revealed = true;
+                ++revealedCells;
                 
               }
           
@@ -307,19 +320,23 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
               ) {
                 // Bottom Right Reveal
                 arr[i + 1][j + 1].revealed = true;
+                ++revealedCells;
                 
               }
             }
         }
+        setCheckWin(checkWin + revealedCells)
         return arr;
     } 
 
     const [boardState, setBoardState] = useState<Array<CellStatus[]>>(initBoard())
-    const [isGameOver, setIsGameOver] = useState(false);
+    const [isGameOver, setIsGameOver] = useState<boolean>(false);
+    const [checkWin, setCheckWin] = useState<number>(0);
 
     const playAgain = () => {
         setIsGameOver(false);
-        setBoardState(initBoard())
+        setCheckWin(0);
+        setBoardState(initBoard());
     }
 
     return (
@@ -331,7 +348,12 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
                     <button onClick={playAgain}>Play Again</button>
                 </div>        
             }
-
+            {checkWin === (gridSize*gridSize - gridSize) &&
+                <div>
+                    <h1>YOU WON!</h1>
+                    <button onClick={playAgain}>Play Again</button>
+                </div>
+            }
         </div>
     )
 }
