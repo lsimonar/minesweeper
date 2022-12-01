@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import {Cell} from "../Cell/Cell";
+import {Timer} from "../Timer/Timer";
+import '../Timer/Timer.css';
 import './Board.css'
 
 type BoardProps = {
@@ -130,6 +132,11 @@ export function Board({gridWidth, gridHeight, nBombs}: BoardProps) : JSX.Element
         });
         if(!isGameOver && checkWin !== (gridWidth*gridHeight - nBombs)){
             let updatedBoard = [... [...boardState]]; 
+            if(updatedBoard[x][y].flagged){
+                setBombsLeft(bombsLeft + 1);
+            } else{
+                setBombsLeft(bombsLeft - 1);
+            }
             updatedBoard[x][y].flagged = !updatedBoard[x][y].flagged;
             setBoardState(updatedBoard);
         }
@@ -334,20 +341,24 @@ export function Board({gridWidth, gridHeight, nBombs}: BoardProps) : JSX.Element
     const [boardState, setBoardState] = useState<Array<CellStatus[]>>(initBoard())
     const [isGameOver, setIsGameOver] = useState<boolean>(false);
     const [checkWin, setCheckWin] = useState<number>(0);
+    const [bombsLeft, setBombsLeft] = useState<number>(nBombs);
 
     const playAgain = () => {
         setIsGameOver(false);
         setCheckWin(0);
         setBoardState(initBoard());
+        setBombsLeft(nBombs);
     }
 
     return (
         <div>
             <div className="outer-border" style={{width: gridWidth*33 + 20, height: 120, borderBottom: 0}}>                
-                <div className="header" style={{width: gridWidth*33}}> 
+                <div className="header" style={{width: gridWidth*33}}>
+                    <div className="timer" style={{width: (gridWidth*33 + 20)/6, textAlign: 'center'}}>{bombsLeft}</div>  
                     <div className="reset-button" onClick={playAgain}>
                         {isGameOver? '😵' : checkWin === (gridWidth*gridHeight - nBombs) ? '😎' : '🙂'}
                     </div>
+                    <Timer isGameOver={isGameOver} checkWin={checkWin} gridSize={gridWidth} nBombs={nBombs}/>
                 </div>
             </div>
             <div className="outer-border" style={{width: gridWidth*33 + 20, height: gridHeight*33 + 20, borderTop: 0}}>
