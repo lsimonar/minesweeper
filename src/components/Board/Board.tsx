@@ -99,10 +99,10 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     }
 
     const handleClick = (x: number, y: number): void =>{
-        let board = boardState;
-        if(board[x][y].flagged === false && !isGameOver){
-            if(board[x][y].content === CellContent.BOMB){
-                board.forEach((row) => {
+        let updatedBoard = [...[...boardState] ];
+        if(updatedBoard[x][y].flagged === false && !isGameOver){
+            if(updatedBoard[x][y].content === CellContent.BOMB){
+                updatedBoard.forEach((row) => {
                     row.forEach((column) => {
                         if(column.content === CellContent.BOMB){
                             column.revealed = true;
@@ -111,12 +111,11 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
                 })
                 setIsGameOver(true);
             } else {
-                board[x][y].revealed = true;
-                if(board[x][y].neighbouringBombs === 0){
-                    board = revealEmpty(x, y);
+                updatedBoard[x][y].revealed = true;
+                if(updatedBoard[x][y].neighbouringBombs === 0){
+                    updatedBoard = revealEmpty(x, y);
                 }
-                setBoardState(board);
-                setHasToRender(!hasToRender);
+                setBoardState(updatedBoard);
             }
         }
     }
@@ -125,10 +124,9 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
         document.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         });
-        let board = boardState; 
-        board[x][y].flagged = !board[x][y].flagged;
-        setBoardState(board);
-        setHasToRender(!hasToRender);
+        let updatedBoard = [... [...boardState]]; 
+        updatedBoard[x][y].flagged = !updatedBoard[x][y].flagged;
+        setBoardState(updatedBoard);
     }
 
     const renderGrid = () => {
@@ -146,7 +144,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
 
     const revealEmpty = (x: number, y: number) => {
         let show: CellStatus[]=[];
-        let arr = boardState;
+        let arr = [...[...boardState] ];
         show.push(arr[x][y]);
         while(show.length!==0){
             let one = show.pop();
@@ -317,7 +315,6 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     } 
 
     const [boardState, setBoardState] = useState<Array<CellStatus[]>>(initBoard())
-    const [hasToRender, setHasToRender] = useState(false);
     const [isGameOver, setIsGameOver] = useState(false);
 
     const playAgain = () => {
