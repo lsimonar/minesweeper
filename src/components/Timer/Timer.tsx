@@ -24,7 +24,7 @@ export const Timer = ({isGameOver, checkWin, gridSize, nBombs}: TimerProps ) => 
     }, [running]);
 
     useEffect(() => {
-        if (isGameOver){
+        if (isGameOver || checkWin === (gridSize*gridSize - nBombs)){
             setRunning(false)
         } else if (checkWin > 0 && checkWin < (gridSize*gridSize - nBombs)) {
             setRunning(true)
@@ -35,7 +35,7 @@ export const Timer = ({isGameOver, checkWin, gridSize, nBombs}: TimerProps ) => 
     }, [isGameOver, checkWin])
 
     return (
-        <div style={{width:(gridSize*33 + 20)/6, textAlign: 'center'}}>
+        <div style={{width:'fit-content', textAlign: 'center'}}>
             <div className="timer"> 
                 <span>{("0" + Math.floor((time / 60000) % 60)).slice(-2)}:</span>
                 <span>{("0" + Math.floor((time / 1000) % 60)).slice(-2)}:</span>
