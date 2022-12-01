@@ -3,7 +3,9 @@ import {Cell} from "../Cell/Cell";
 import './Board.css'
 
 type BoardProps = {
-    gridSize: number;
+    gridWidth: number;
+    gridHeight: number;
+    nBombs: number;
 }
 
 export enum CellContent {
@@ -20,17 +22,17 @@ export interface CellStatus {
     flagged: boolean
 }
 
-export function Board({gridSize}: BoardProps) : JSX.Element{
+export function Board({gridWidth, gridHeight, nBombs}: BoardProps) : JSX.Element{
 
     const fillEmptyStates = () => {
 
         let emptyCells: Array<CellStatus[]> = [];
 
-        for(let i=0; i< gridSize; i++){
+        for(let i=0; i< gridWidth; i++){
 
             let cellStates = [];
 
-            for(let j=0; j< gridSize; j++){
+            for(let j=0; j< gridHeight; j++){
                 cellStates.push({
                     index: [i, j],
                     content: CellContent.EMPTY,
@@ -47,8 +49,8 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
 
     const plantBombs = (boardState: Array<CellStatus[]>) => {
         let bombsPlanted: number = 0;
-        while(bombsPlanted < gridSize){
-            const randomIndex = [Math.floor(Math.random() * gridSize), Math.floor(Math.random() * gridSize)];
+        while(bombsPlanted < nBombs){
+            const randomIndex = [Math.floor(Math.random() * gridWidth), Math.floor(Math.random() * gridHeight)];
             if(boardState[randomIndex[0]][randomIndex[1]].content !== CellContent.BOMB){ 
                 boardState[randomIndex[0]][randomIndex[1]].content = CellContent.BOMB
                 ++bombsPlanted;
@@ -58,31 +60,31 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     }
 
     const findNeighbouringBombs = (boardState: Array<CellStatus[]>): Array<CellStatus[]> => {
-        for(let x=0; x < gridSize; x++){
-            for(let y=0; y < gridSize; y++){
+        for(let x=0; x < gridWidth; x++){
+            for(let y=0; y < gridHeight; y++){
                 if(boardState[x][y].content === CellContent.BOMB){
                     if(x > 0){
                         boardState[x - 1][y].neighbouringBombs += 1;
                     }
-                    if(x < gridSize - 1){
+                    if(x < gridWidth - 1){
                         boardState[x + 1][y].neighbouringBombs += 1;
                     }
                     if(y > 0){
                         boardState[x][y - 1].neighbouringBombs += 1;
                     }
-                    if(y < gridSize - 1){
+                    if(y < gridHeight - 1){
                         boardState[x][y + 1].neighbouringBombs += 1;
                     }
                     if(x > 0 && y > 0){
                         boardState[x - 1][y - 1].neighbouringBombs += 1;
                     }
-                    if(x < gridSize - 1 && y < gridSize - 1){
+                    if(x < gridWidth - 1 && y < gridHeight - 1){
                         boardState[x + 1][y + 1].neighbouringBombs += 1;
                     }
-                    if(x > 0 && y < gridSize - 1){
+                    if(x > 0 && y < gridHeight - 1){
                         boardState[x - 1][y + 1].neighbouringBombs += 1;
                     }
-                    if(x < gridSize - 1 && y > 0){
+                    if(x < gridWidth - 1 && y > 0){
                         boardState[x + 1][y - 1].neighbouringBombs += 1;
                     }
                 }
@@ -100,7 +102,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
 
     const handleClick = (x: number, y: number): void =>{
         let updatedBoard = [...[...boardState] ];
-        if(updatedBoard[x][y].flagged === false && !isGameOver && checkWin !== (gridSize*gridSize - gridSize)){
+        if(updatedBoard[x][y].flagged === false && !isGameOver && checkWin !== (gridWidth*gridHeight - nBombs)){
             if(updatedBoard[x][y].content === CellContent.BOMB){
                 updatedBoard.forEach((row) => {
                     row.forEach((column) => {
@@ -126,7 +128,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
         document.addEventListener("contextmenu", (event) => {
             event.preventDefault();
         });
-        if(!isGameOver && checkWin !== (gridSize*gridSize - gridSize)){
+        if(!isGameOver && checkWin !== (gridWidth*gridHeight - nBombs)){
             let updatedBoard = [... [...boardState]]; 
             updatedBoard[x][y].flagged = !updatedBoard[x][y].flagged;
             setBoardState(updatedBoard);
@@ -137,8 +139,8 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
 
         const cells = [] as JSX.Element[];
         let key=0;
-        for(let x=0; x < gridSize; x++){
-            for(let y=0; y < gridSize; y++){
+        for(let x=0; x < gridWidth; x++){
+            for(let y=0; y < gridHeight; y++){
                 key++;
                 cells.push(<Cell key={key} onClick={handleClick} onRightClick={handleRightClick} boardStatus={boardState[x][y]} />)
             }
@@ -340,21 +342,25 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     }
 
     return (
-        <div>                
-            {isGameOver && 
-                <div>
-                    <h1>GAME OVER</h1>
-                    <button onClick={playAgain}>Play Again</button>
-                </div>        
-            }
-            {checkWin === (gridSize*gridSize - gridSize) &&
-                <div>
-                    <h1>YOU WON!</h1>
-                    <button onClick={playAgain}>Play Again</button>
+        <div>
+            <div className="outer-border" style={{width: gridWidth*33 + 20, height: 120}}>                
+                <div className="header" style={{width: gridWidth*33}}> 
+                    {isGameOver && 
+                        <div>
+                            <h1>GAME OVER</h1>
+                            <button onClick={playAgain}>Play Again</button>
+                        </div>        
+                    }
+                    {checkWin === (gridWidth*gridHeight - nBombs) &&
+                        <div>
+                            <h1>YOU WON!</h1>
+                            <button onClick={playAgain}>Play Again</button>
+                        </div>
+                    }
                 </div>
-            }
-            <div className="outer-border">
-                <div className="board-ctn" style={{width: gridSize*33}}>
+            </div>
+            <div className="outer-border" style={{width: gridWidth*33 + 20, height: gridHeight*33 + 20}}>
+                <div className="board-ctn" style={{width: gridWidth*33, height: gridHeight*33}}>
                     {renderGrid()}
                 </div>
             </div>

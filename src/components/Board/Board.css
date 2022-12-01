@@ -1,17 +1,28 @@
+.header {
+    background-color: rgb(194, 194, 194);
+    border: 4px inset;
+    height: 100px;
+}
+
 .board-ctn {
     display: flex;
     flex-wrap: wrap;
-    width: 300px;
     background-color: rgb(194, 194, 194);
     border: 4px inset;
 }
 
 .outer-border {
     background-color: rgb(194, 194, 194);
-    width: 320px;
-    height: 320px;
     border: 4px outset;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.reset-button {
+    background-color: rgb(194, 194, 194);
+    width: 50px;
+    height: 50px;
+    border: 4px outset;
+    cursor: pointer;
 }
