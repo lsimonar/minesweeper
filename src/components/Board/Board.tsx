@@ -340,8 +340,7 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
     }
 
     return (
-        <div className="board-ctn" style={{width: gridSize*33}}>
-            {renderGrid()}
+        <div>                
             {isGameOver && 
                 <div>
                     <h1>GAME OVER</h1>
@@ -354,6 +353,11 @@ export function Board({gridSize}: BoardProps) : JSX.Element{
                     <button onClick={playAgain}>Play Again</button>
                 </div>
             }
+            <div className="outer-border">
+                <div className="board-ctn" style={{width: gridSize*33}}>
+                    {renderGrid()}
+                </div>
+            </div>
         </div>
     )
 }

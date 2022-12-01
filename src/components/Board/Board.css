@@ -2,4 +2,16 @@
     display: flex;
     flex-wrap: wrap;
     width: 300px;
+    background-color: rgb(194, 194, 194);
+    border: 4px inset;
+}
+
+.outer-border {
+    background-color: rgb(194, 194, 194);
+    width: 320px;
+    height: 320px;
+    border: 4px outset;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
