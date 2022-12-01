@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Cell} from "../Cell/Cell";
 import './Board.css'
 
@@ -343,23 +343,14 @@ export function Board({gridWidth, gridHeight, nBombs}: BoardProps) : JSX.Element
 
     return (
         <div>
-            <div className="outer-border" style={{width: gridWidth*33 + 20, height: 120}}>                
+            <div className="outer-border" style={{width: gridWidth*33 + 20, height: 120, borderBottom: 0}}>                
                 <div className="header" style={{width: gridWidth*33}}> 
-                    {isGameOver && 
-                        <div>
-                            <h1>GAME OVER</h1>
-                            <button onClick={playAgain}>Play Again</button>
-                        </div>        
-                    }
-                    {checkWin === (gridWidth*gridHeight - nBombs) &&
-                        <div>
-                            <h1>YOU WON!</h1>
-                            <button onClick={playAgain}>Play Again</button>
-                        </div>
-                    }
+                    <div className="reset-button" onClick={playAgain}>
+                        {isGameOver? '😵' : checkWin === (gridWidth*gridHeight - nBombs) ? '😎' : '🙂'}
+                    </div>
                 </div>
             </div>
-            <div className="outer-border" style={{width: gridWidth*33 + 20, height: gridHeight*33 + 20}}>
+            <div className="outer-border" style={{width: gridWidth*33 + 20, height: gridHeight*33 + 20, borderTop: 0}}>
                 <div className="board-ctn" style={{width: gridWidth*33, height: gridHeight*33}}>
                     {renderGrid()}
                 </div>

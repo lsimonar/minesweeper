@@ -5,7 +5,7 @@ import './Game.css'
 export function Game(): JSX.Element {
     return (
         <div className='game-ctn'>
-            <Board gridWidth={15} gridHeight={15} nBombs={20} />
+            <Board gridWidth={15} gridHeight={15} nBombs={50} />
         </div>
     )
 }
