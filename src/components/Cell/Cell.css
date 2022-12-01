@@ -11,4 +11,26 @@
     height: 31px;
     line-height: 31px;
     text-align: center;
+    font-weight: 900;
+    font-size: 20px;
+}
+
+.blue {
+    color: blue;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.purple {
+    color: purple;
+}
+
+.maroon {
+    color: maroon;
 }
