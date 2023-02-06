@@ -131,7 +131,7 @@ export function Board({gridWidth, gridHeight, nBombs}: BoardProps) : JSX.Element
             event.preventDefault();
         });
         if(!isGameOver && checkWin !== (gridWidth*gridHeight - nBombs)){
-            let updatedBoard = [... [...boardState]]; 
+            let updatedBoard = [...[...boardState]]; 
             if(updatedBoard[x][y].flagged){
                 setBombsLeft(bombsLeft + 1);
             } else{

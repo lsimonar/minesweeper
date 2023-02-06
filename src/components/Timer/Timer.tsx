@@ -32,7 +32,7 @@ export const Timer = ({isGameOver, checkWin, gridSize, nBombs}: TimerProps ) => 
             setRunning(false)
             setTime(0)
         }
-    }, [isGameOver, checkWin])
+    }, [isGameOver, checkWin, gridSize, nBombs])
 
     return (
         <div style={{width:'fit-content', textAlign: 'center'}}>
